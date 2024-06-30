@@ -37,7 +37,7 @@ def draw_buttons():
         text=font.render(b['name'], True, BLACK)
         screen.blit(text, (b['coordinates'][0]+5,b['coordinates'][1]+3))
     
-    b=buttons[-2]
+    b=buttons[-1]
     pygame.draw.rect(screen, WHITE, b['coordinates'])
     pygame.draw.rect(screen, BLACK, b['coordinates'], 3)
     text=font.render(b['name'], True, BLACK)
@@ -311,8 +311,7 @@ if __name__=='__main__':
     draw_background()
     draw_buttons()
     draw_square()
-    l=gen_list()
-    visualize_list()
+
 
 
     run  = True
@@ -328,6 +327,8 @@ if __name__=='__main__':
                     if(x>=buttons[i]['coordinates'][0] and x<=buttons[i]['coordinates'][0]+buttons[i]['coordinates'][2] and y>=buttons[i]['coordinates'][1] and y<=buttons[i]['coordinates'][1]+buttons[i]['coordinates'][3]):
                         if(i<len(buttons)):
                             selected=i
+                            l=gen_list()
+                            visualize_list()
                             draw_buttons()
                             select_algo(selected, current_delay)
                             break
@@ -336,18 +337,19 @@ if __name__=='__main__':
                     draw_buttons()
 
             if (event.type == pygame.KEYDOWN):
-                if event.key == pygame.K_BACKSPACE and buttons[-1]['name']!='':
+                if event.key == pygame.K_BACKSPACE and buttons[-1]['name']!='' and selected==8:
                     buttons[-1]['name'] = buttons[-1]['name'][:-1]
                     draw_buttons()
-                elif(event.key == pygame.K_RETURN) and buttons[-1]['name']!='':
+                elif(event.key == pygame.K_RETURN) and buttons[-1]['name']!=''  and selected==8:
                     current_delay=int(buttons[-1]['name'])
                     buttons[-1]['name']=''
                     selected=-1
                     draw_buttons()
-                else:
-                    text += event.unicode
-                text_bar(text, selected)
-                print(text)
+                elif(selected==8):
+                    for i in range(len(INPUTS)):
+                        if (event.key==INPUTS[i]):
+                            buttons[-1]['name']=buttons[-1]['name']+str(i+1)
+                            draw_buttons()
         pygame.display.flip()
         clock.tick(30)
     pygame.quit()
