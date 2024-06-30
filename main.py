@@ -19,15 +19,29 @@ def gen_buttons():
     x,y=x+w+10, 20
     buttons.append({'name': 'Merge sort', 'coordinates': (x,y,w,h)})
     y=y+h+10
-    buttons.append({'name': 'Patience sort' , 'coordinates': (x,y,w,h)})
+    buttons.append({'name': 'Gnome sort' , 'coordinates': (x,y,w,h)})
+    x,y=x+w+10, 20
+    buttons.append({'name': 'Smooth sort', 'coordinates': (x,y,w,h)})
+    y=y+h+10
+    buttons.append({'name': 'Strand sort' , 'coordinates': (x,y,w,h)})
+    x,y=x+w+10, 20
+    buttons.append({'name': '', 'coordinates': (x,y,w,h)})
+    y=y+h+10
+    # buttons.append({'name': 'Set Delay' , 'coordinates': (x,y,w,h)})
     return(buttons)
 
 def draw_buttons():   
-    for b in buttons[:len(buttons)]:
+    for b in buttons[:len(buttons)-1]:
         pygame.draw.rect(screen, GRAY, b['coordinates'])
         pygame.draw.rect(screen, BLACK, b['coordinates'], 3)
         text=font.render(b['name'], True, BLACK)
         screen.blit(text, (b['coordinates'][0]+5,b['coordinates'][1]+3))
+    
+    b=buttons[-2]
+    pygame.draw.rect(screen, WHITE, b['coordinates'])
+    pygame.draw.rect(screen, BLACK, b['coordinates'], 3)
+    text=font.render(b['name'], True, BLACK)
+    screen.blit(text, (b['coordinates'][0]+5,b['coordinates'][1]+3))
     
     if selected!=-1:
         pygame.draw.rect(screen, LIGHT_PINK, buttons[selected]['coordinates'])
@@ -56,20 +70,24 @@ def gen_list():
     l=np.random.randint(0,100, size=100)
     return(l)
 
-def select_algo(n):
+def select_algo(n, d):
     match n:
         case 0:
-            bubbleSort()
+            bubbleSort(d)
         case 1:
-            insertionSort()
+            insertionSort(d)
         case 2:
-            selectionSort()
+            selectionSort(d)
         case 3:
-            quickSort(0,99)
+            quickSort(0,99, d)
         case 4:
-            mergeSort(0,99)
+            mergeSort(0,99, d)
         case 5:
-            gnomeSort()
+            gnomeSort(d)
+        case 6:
+            smooth_sort(d)
+        case 7:
+            pancakeSort(d)
 
 def visualize_list():
     draw_square()
@@ -80,7 +98,7 @@ def visualize_list():
         x=x+6
     pygame.display.flip()
 
-def bubbleSort():
+def bubbleSort(d):
     n = len(l)
     for i in range(n-1):
         swapped = False
@@ -89,11 +107,11 @@ def bubbleSort():
                 swapped = True
                 l[j], l[j + 1] = l[j + 1], l[j]
                 visualize_list()
-                pygame.time.delay(1)
+                pygame.time.delay(d)
         if not swapped:
             return
 
-def insertionSort():
+def insertionSort(d):
     n = len(l)
     if n <= 1:
         return  
@@ -104,10 +122,10 @@ def insertionSort():
             l[j+1] = l[j]  
             j -= 1
             visualize_list()
-            pygame.time.delay(5)
+            pygame.time.delay(d)
         l[j+1] = key  
   
-def selectionSort():
+def selectionSort(d):
     n = len(l)
     for ind in range(n):
         min_index = ind
@@ -116,9 +134,9 @@ def selectionSort():
                 min_index = j
         (l[ind], l[min_index]) = (l[min_index], l[ind])
         visualize_list()
-        pygame.time.delay(10)
+        pygame.time.delay(d)
 
-def partition(low, high):
+def partition(low, high, d):
     pivot = l[high]
     i = low - 1
     for j in range(low, high):
@@ -126,19 +144,19 @@ def partition(low, high):
             i = i + 1
             (l[i], l[j]) = (l[j], l[i])
             visualize_list()
-            pygame.time.delay(5)
+            pygame.time.delay(d)
     (l[i + 1], l[high]) = (l[high], l[i + 1])
     visualize_list()
-    pygame.time.delay(5)
+    pygame.time.delay(d)
     return i + 1
 
-def quickSort(low, high):
+def quickSort(low, high, d):
     if low < high:
-        pi = partition(low, high)
-        quickSort(low, pi - 1)
-        quickSort(pi + 1, high)
+        pi = partition(low, high, d)
+        quickSort(low, pi - 1, d)
+        quickSort(pi + 1, high, d)
 
-def merge(left, m, right):
+def merge1(left, m, right,d):
     n1 = m - left + 1
     n2 = right - m
     L = [0] * (n1)
@@ -167,16 +185,16 @@ def merge(left, m, right):
         j += 1
         k += 1
     visualize_list()
-    pygame.time.delay(5)
+    pygame.time.delay(d)
  
-def mergeSort(left, right):
+def mergeSort(left, right,d):
     if left < right:
         m = left+(right-left)//2
-        mergeSort(left, m)
-        mergeSort(m+1, right)
-        merge(left, m, right)
+        mergeSort(left, m,d)
+        mergeSort(m+1, right,d)
+        merge1(left, m, right,d)
 
-def gnomeSort():
+def gnomeSort(d):
     n=len(l)
     index = 0
     while index < n:
@@ -188,10 +206,93 @@ def gnomeSort():
             l[index], l[index - 1] = l[index - 1], l[index]
             index = index - 1
         visualize_list()
-        pygame.time.delay(5)
+        pygame.time.delay(d)
 
+def smooth_sort(d):
+    n = len(l)
 
+    def leonardo(k):
+        if k < 2:
+            return 1
+        return leonardo(k - 1) + leonardo(k - 2) + 1
+ 
+    def heapify(start, end):
+        i = start
+        j = 0
+        k = 0
+        while k < end - start + 1:
+            if k & 0xAAAAAAAA:
+                j = j + i
+                i = i >> 1
+            else:
+                i = i + j
+                j = j >> 1
+            k = k + 1
+        while i > 0:
+            j = j >> 1
+            k = i + j
+            while k < end:
+                if l[k] > l[k - i]:
+                    break
+                l[k], l[k - i] = l[k - i], l[k]
+                k = k + i
+            i = j
+    p = n - 1
+    q = p
+    r = 0
+    while p > 0:
+        if (r & 0x03) == 0:
+            heapify(r, q)
+        if leonardo(r) == p:
+            r = r + 1
+        else:
+            r = r - 1
+            q = q - leonardo(r)
+            heapify(r, q)
+            q = r - 1
+            r = r + 1
+        l[0], l[p] = l[p], l[0]
+        visualize_list()
+        pygame.time.delay(d)
+        p = p - 1
+    for i in range(n - 1):
+        j = i + 1
+        while j > 0 and l[j] < l[j - 1]:
+            l[j], l[j - 1] = l[j - 1], l[j]
+            j = j - 1
+            visualize_list()
+            pygame.time.delay(5)
 
+def flip(arr, i, d):
+    start = 0
+    while start < i:
+        temp = arr[start]
+        arr[start] = arr[i]
+        arr[i] = temp
+        start += 1
+        i -= 1
+        visualize_list()
+        pygame.time.delay(d)
+
+def findMax(arr, n, d):
+    mi = 0
+    for i in range(0,n):
+        if arr[i] > arr[mi]:
+            mi = i
+            visualize_list()
+            pygame.time.delay(d)
+    return mi
+
+def pancakeSort(d):
+    curr_size = len(l)
+    while curr_size > 1:
+        mi = findMax(l, curr_size)
+        if mi != curr_size-1:
+            flip(l, mi)
+            flip(l, curr_size-1)
+            visualize_list()
+            pygame.time.delay(d)
+        curr_size -= 1
 
 
 
@@ -203,6 +304,8 @@ if __name__=='__main__':
     pygame.display.set_caption('Sorting visualizer♥')
     font = pygame.font.SysFont('arial', 20)
 
+    current_delay=1
+    delay=''
     selected=-1
     buttons=gen_buttons()
     draw_background()
@@ -210,6 +313,7 @@ if __name__=='__main__':
     draw_square()
     l=gen_list()
     visualize_list()
+
 
     run  = True
 
@@ -225,12 +329,25 @@ if __name__=='__main__':
                         if(i<len(buttons)):
                             selected=i
                             draw_buttons()
-                            select_algo(selected)
+                            select_algo(selected, current_delay)
                             break
                 else:
                     selected=-1
                     draw_buttons()
 
+            if (event.type == pygame.KEYDOWN):
+                if event.key == pygame.K_BACKSPACE and buttons[-1]['name']!='':
+                    buttons[-1]['name'] = buttons[-1]['name'][:-1]
+                    draw_buttons()
+                elif(event.key == pygame.K_RETURN) and buttons[-1]['name']!='':
+                    current_delay=int(buttons[-1]['name'])
+                    buttons[-1]['name']=''
+                    selected=-1
+                    draw_buttons()
+                else:
+                    text += event.unicode
+                text_bar(text, selected)
+                print(text)
         pygame.display.flip()
         clock.tick(30)
     pygame.quit()
